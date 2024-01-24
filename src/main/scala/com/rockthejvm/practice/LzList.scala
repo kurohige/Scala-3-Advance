@@ -94,6 +94,23 @@ object LzList {
 
 }
 
+def eratosthenes: LzList[Int] = {
+  def isPrime(n: Int): Boolean = {
+    if (n <= 1) false
+    else if (n == 2) true
+    else !(2 to Math.sqrt(n).toInt).exists(n % _ == 0)
+  }
+
+  def sieve(numbers: LzList[Int]): LzList[Int] = {
+    if (numbers.isEmpty) numbers
+    else if (!isPrime(numbers.head)) sieve(numbers.tail)
+    else new LzCons(numbers.head, sieve(numbers.tail.filter(_ % numbers.head != 0)))
+  }
+
+    val naturalsFrom2 = LzList.generate(2)(_ + 1)
+    sieve(naturalsFrom2)
+}
+
 object LzListPlayground{
   def main(args: Array[String]): Unit = {
     val naturals = LzList.generate(1)(_ + 1)
@@ -103,5 +120,23 @@ object LzListPlayground{
 
     val first50k = naturals.take(50000)
     first50k.foreach(println)
+
+    /**
+     * Exercises:
+     * 1. Lazy list of fibonacci numbers
+     * 2. Lazy list of prime numbers
+     *    - filter with isPrime
+     *    - Eratosthenes' sieve
+     */
+
+    // 1
+    def fibonacci(first: BigInt, second: BigInt): LzList[BigInt] =
+      LzCons(first, fibonacci(second, first + second))
+
+    println(fibonacci(1, 1).take(100).toList)
+
+
+
+
   }
 }
