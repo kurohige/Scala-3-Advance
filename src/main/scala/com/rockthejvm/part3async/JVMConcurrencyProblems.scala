@@ -93,6 +93,8 @@ object JVMConcurrencyProblems {
     println(message)
   }
 
-  def main(args: Array[String]): Unit = {}
+  def main(args: Array[String]): Unit = {
+    inceptionThreads(50).start()
+  }
 
 }
