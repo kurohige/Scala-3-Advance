@@ -48,6 +48,51 @@ object JVMConcurrencyProblems {
     }
   }
 
+  /** Exercises
+    * 1. create "inception" threads
+    *   thread1 -> thread2 -> thread3 -> thread4 -> thread1
+    *   print "hello from thread #"
+    *   in REVERSE ORDER
+    *
+    * 2. what's the biggest value possible for x?
+    *   var x = 0
+    *    val threads = (1 to 100).map(_ => new Thread(() => x += 1))
+    *
+    *  3. sleep fallacy
+    */
+  // 1- inception threads
+  def inceptionThreads(maxThreads: Int, i: Int = 1): Thread =
+    new Thread(() => {
+      if (i < maxThreads) {
+        val newThread = inceptionThreads(maxThreads, i + 1)
+        newThread.start()
+        newThread.join()
+      }
+      println(s"Hello from thread $i")
+    })
+
+  def minMaxX(): Unit = {
+    var x = 0
+    val threads = (1 to 100).map(_ => new Thread(() => x += 1))
+    threads.foreach(_.start())
+    threads.foreach(_.join())
+    println(x)
+  }
+
+  def demoSleepFallacy(): Unit = {
+    var message = ""
+    val awesomeThread = new Thread(() => {
+      Thread.sleep(1000)
+      message = "Scala is awesome"
+    })
+
+    message = "Scala sucks"
+    awesomeThread.start()
+    Thread.sleep(2000)
+    awesomeThread.join()
+    println(message)
+  }
+
   def main(args: Array[String]): Unit = {}
 
 }
