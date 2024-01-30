@@ -107,12 +107,12 @@ object Futures {
 
     // fallbacks
   val profileNoMatterWhat: Future[Profile] = SocialNetwork.fetchProfile("unknown id").recover {
-        case e: Throwable => Profile("rtjvm.id.0-dummy", "Forever alone")
-    }
+    case e: Throwable => Profile("rtjvm.id.0-dummy", "Forever alone")
+  }
 
   val aFetchProfileNoMatteWhat: Future[Profile] = SocialNetwork.fetchProfile("unknown id").recoverWith {
-        case e: Throwable => SocialNetwork.fetchProfile("rtjvm.id.0-dummy")
-    }
+    case e: Throwable => SocialNetwork.fetchProfile("rtjvm.id.0-dummy")
+  }
   val fallBackProfile: Future[Profile] = SocialNetwork.fetchProfile("unknown id").fallbackTo(SocialNetwork.fetchProfile("rtjvm.id.0-dummy"))
 
   val janeProfileFuture = SocialNetwork.fetchProfile("rtjvm.id.2-jane")
