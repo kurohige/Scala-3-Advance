@@ -95,15 +95,16 @@ object Futures {
   }
 
     // for-comprehensions
-    def sendMessageToBestFriend_v3(profileId: String, message: String): Unit = {
-        // step 1: fetch profile
-        val profileFuture = SocialNetwork.fetchProfile(profileId)
-        // step 2: fetch best friend
-        for {
-            profile <- profileFuture
-            bestFriend <- SocialNetwork.fetchBestFriend(profile)
-        } yield  profile.sendMessage(bestFriend, message)
-    }
+
+  def sendMessageToBestFriend_v3(profileId: String, message: String): Unit = {
+    // step 1: fetch profile
+    val profileFuture = SocialNetwork.fetchProfile(profileId)
+    // step 2: fetch best friend
+    for {
+      profile <- profileFuture
+      bestFriend <- SocialNetwork.fetchBestFriend(profile)
+    } yield  profile.sendMessage(bestFriend, message)
+  }
 
     // fallbacks
   val profileNoMatterWhat: Future[Profile] = SocialNetwork.fetchProfile("unknown id").recover {
