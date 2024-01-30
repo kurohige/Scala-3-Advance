@@ -30,8 +30,99 @@ object Futures {
         case Failure(exception) => println(s"My async computation failed: $exception")
     }
 
+  /*
+    Functional composition on futures
+   */
+  case class Profile(id: String, name: String) {
+    def sendMessage(anotherProfile: Profile, message: String): Unit = println(s"${this.name} sending message to: ${anotherProfile.name}: $message")
+  }
+
+  object SocialNetwork {
+    // "database"
+    val names = Map(
+      "rtjvm.id.1-daniel" -> "Daniel",
+      "rtjvm.id.2-jane" -> "Jane",
+      "rtjvm.id.3-mark" -> "Mark"
+    )
+    val friends = Map(
+      "rtjvm.id.2-jane" -> "rtjvm.id.3-mark"
+    )
+
+    val random = new scala.util.Random()
+    // API
+    def fetchProfile(id: String): Future[Profile] = Future {
+      // fetching from the DB
+      Thread.sleep(random.nextInt(300))
+      Profile(id, names(id))
+    }
+
+    def fetchBestFriend(profile: Profile): Future[Profile] = Future {
+      Thread.sleep(random.nextInt(400))
+      val bestFriendId = friends(profile.id)
+      Profile(bestFriendId, names(bestFriendId))
+    }
+  }
+
+  // problem: send a message to my best friend
+  def sendMessageToBestFriend(profileId: String, message: String): Unit = {
+    // step 1: fetch profile
+    val profileFuture = SocialNetwork.fetchProfile(profileId)
+    profileFuture.onComplete {
+      case Success(profile) =>
+        // step 2: fetch best friend
+        val bestFriendFuture = SocialNetwork.fetchBestFriend(profile)
+        bestFriendFuture.onComplete {
+          case Success(bestFriend) =>
+            // step 3: send a message
+            profile.sendMessage(bestFriend, message)
+          case Failure(exception) => println(s"Error fetching best friend: $exception")
+        }
+      case Failure(exception) => println(s"Error fetching profile: $exception")
+    }
+  }
+
+  // on complete is a hassle.
+  // solution: functional composition of futures
+  def sendMessageToBestFriend_v2(profileId: String, message: String): Unit = {
+    // step 1: fetch profile
+    val profileFuture = SocialNetwork.fetchProfile(profileId)
+    // step 2: fetch best friend
+    profileFuture.flatMap {
+      profile => SocialNetwork.fetchBestFriend(profile).map {
+        bestFriend => profile.sendMessage(bestFriend, message)
+      }
+    }
+  }
+
+    // for-comprehensions
+    def sendMessageToBestFriend_v3(profileId: String, message: String): Unit = {
+        // step 1: fetch profile
+        val profileFuture = SocialNetwork.fetchProfile(profileId)
+        // step 2: fetch best friend
+        for {
+            profile <- profileFuture
+            bestFriend <- SocialNetwork.fetchBestFriend(profile)
+        } yield  profile.sendMessage(bestFriend, message)
+    }
+
+    // fallbacks
+    val profileNoMatterWhat: Future[Profile] = SocialNetwork.fetchProfile("unknown id").recover {
+        case e: Throwable => Profile("rtjvm.id.0-dummy", "Forever alone")
+    }
+
+    val aFetchProfileNoMatteWhat: Future[Profile] = SocialNetwork.fetchProfile("unknown id").recoverWith {
+        case e: Throwable => SocialNetwork.fetchProfile("rtjvm.id.0-dummy")
+    }
+
+  val fallBackProfile: Future[Profile] = SocialNetwork.fetchProfile("unknown id").fallbackTo(SocialNetwork.fetchProfile("rtjvm.id.0-dummy"))
+
+  val janeProfileFuture = SocialNetwork.fetchProfile("rtjvm.id.2-jane")
+  val janeFuture: Future[String] = janeProfileFuture.map(janeProfile => janeProfile.name)
+  val janesBestFriend: Future[Profile] = janeProfileFuture.flatMap(janeProfile => SocialNetwork.fetchBestFriend(janeProfile))
+  val janesBestFriendRestricted: Future[Profile] = janesBestFriend.filter(profile => profile.name.startsWith("M"))
+
   def main(args: Array[String]): Unit = {
-    println(futureInstantResult)
+    sendMessageToBestFriend_v3("rtjvm.id.2-jane", "Hello, best friend!")
     Thread.sleep(2000)
     executor.shutdown()
   }
