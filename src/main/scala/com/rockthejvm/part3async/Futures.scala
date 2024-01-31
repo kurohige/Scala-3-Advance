@@ -232,12 +232,39 @@ object Futures {
         case _ => retryUntil(action, condition)
       }
 
+  def testRetries(): Unit = {
+    val random = new scala.util.Random()
+    val action = () => Future {
+      Thread.sleep(100)
+      val nextValue = random.nextInt(100)
+      println(s"generated $nextValue")
+      nextValue
+    }
+
+    val predicate = (x: Int) => x < 10
+
+    retryUntil(action, predicate).foreach(result => println(s"settled at $result"))
+    Thread.sleep(10000)
+  }
+
   def main(args: Array[String]): Unit = {
 //    sendMessageToBestFriend_v3("rtjvm.id.2-jane", "Hello, best friend!")
 //    println("purchasing...")
 //    BankingApp.purchase("Daniel-234", "shoes", "rtjvm-store", 3000)
 //    println("purhcase finished")
-    demoPromises()
+    // demoPromises()
+//    lazy val fast = Future {
+//      Thread.sleep(100)
+//      1
+//    }
+//    lazy val slow = Future {
+//      Thread.sleep(200)
+//      2
+//    }
+//    first(fast, slow).foreach(result => println(s"First: $result"))
+//    last(fast, slow).foreach(result => println(s"Last: $result"))
+
+    testRetries()
     Thread.sleep(2000)
     executor.shutdown()
   }
