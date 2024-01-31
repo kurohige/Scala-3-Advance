@@ -164,14 +164,34 @@ object Futures {
     Promises
    */
 
-  val promise = Promise[Int]() // "controller" over a future
-  val futureInside: Future[Int] = promise.future
+  def demoPromises(): Unit = {
+    val promise = Promise[Int]() // "controller" over a future
+    val futureInside: Future[Int] = promise.future
+
+    // thread 1 - "consumer" : monitor the future for completion
+    futureInside.onComplete {
+      case Success(value) => println(s"[Consumer] I've just been completed with $value")
+      case Failure(ex) => ex.printStackTrace()
+    }
+
+    // thread 2 - "producer" : fullfilling the promise
+    val producerThread = new Thread(() => {
+      println("[Producer] crunching numbers...")
+      Thread.sleep(1000)
+      // "fullfilling" the promise
+      promise.success(42)
+      println("done")
+    })
+
+    producerThread.start()
+  }
 
   def main(args: Array[String]): Unit = {
-    sendMessageToBestFriend_v3("rtjvm.id.2-jane", "Hello, best friend!")
-    println("purchasing...")
-    BankingApp.purchase("Daniel-234", "shoes", "rtjvm-store", 3000)
-    println("purhcase finished")
+//    sendMessageToBestFriend_v3("rtjvm.id.2-jane", "Hello, best friend!")
+//    println("purchasing...")
+//    BankingApp.purchase("Daniel-234", "shoes", "rtjvm-store", 3000)
+//    println("purhcase finished")
+    demoPromises()
     Thread.sleep(2000)
     executor.shutdown()
   }
