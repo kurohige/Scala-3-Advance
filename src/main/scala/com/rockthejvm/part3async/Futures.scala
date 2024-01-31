@@ -185,6 +185,52 @@ object Futures {
 
     producerThread.start()
   }
+  /*
+    Exercises
+    1) fulfill a future IMMEDIATELY with a value
+    2) inSequence(fa, fb) in sequence: make sure the first future completes before returning the second future
+    3) first(fa, fb) : returns a new future with the first value of the two futures
+  */
+  // 1
+  def completeImmediately[T](value: T): Future[T] = Future(value) // async completion as soon as possible
+  def completeImmediately_v2[T](value: T): Future[T] = Future.successful(value) // synchronous completion
+
+  // 2
+  def inSequence[A, B](first: Future[A], second: Future[B]): Future[B] = first.flatMap(_ => second)
+
+
+  // 3
+  def first[A](f1: Future[A], f2: Future[A]): Future[A] = {
+    val promise = Promise[A]()
+    f1.onComplete(result1 => promise.tryComplete(result1))
+    f2.onComplete(result2 => promise.tryComplete(result2))
+
+    promise.future
+  }
+
+  // 4
+  def last[A](f1: Future[A], f2: Future[A]): Future[A] = {
+    val bothPromise = Promise[A]()
+    val lastPromise = Promise[A]()
+
+    val checkAndComplete = (result: Try[A]) =>
+      if (!bothPromise.tryComplete(result))
+        lastPromise.complete(result)
+
+    f1.onComplete(checkAndComplete)
+    f2.onComplete(checkAndComplete)
+
+    lastPromise.future
+  }
+
+
+  // 5
+  def retryUntil[A](action: () => Future[A], condition: A => Boolean): Future[A] =
+    action()
+      .filter(condition)
+      .recoverWith {
+        case _ => retryUntil(action, condition)
+      }
 
   def main(args: Array[String]): Unit = {
 //    sendMessageToBestFriend_v3("rtjvm.id.2-jane", "Hello, best friend!")
