@@ -1,8 +1,9 @@
 package com.rockthejvm.part3async
 
 import java.util.concurrent.Executors
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{Await, ExecutionContext, Future, Promise}
 import scala.util.{Failure, Success, Try}
+import scala.concurrent.duration.*
 
 object Futures {
 
@@ -121,8 +122,56 @@ object Futures {
   val janesBestFriend: Future[Profile] = janeProfileFuture.flatMap(janeProfile => SocialNetwork.fetchBestFriend(janeProfile))
   val janesBestFriendRestricted: Future[Profile] = janesBestFriend.filter(profile => profile.name.startsWith("M"))
 
+  /*
+    Block for a future
+   */
+
+  case class User(name: String)
+  case class Transaction(sender: String, receiver: String, amount: Double, status: String)
+
+  object BankingApp {
+    val name = "Rock the JVM banking"
+
+    // "API's"
+    def fetchUser(name: String): Future[User] = Future {
+      // simulate fetching from the DB
+      Thread.sleep(500)
+      User(name)
+    }
+
+    def createTransaction(user: User, merchantName: String, amount: Double): Future[Transaction] = Future {
+      // simulate some processes
+      Thread.sleep(1000)
+      Transaction(user.name, merchantName, amount, "SUCCESS")
+    }
+
+    // "External API"
+    def purchase(username: String, item: String, merchantName: String, price: Double): String = {
+      // fetch the user from the DB
+      // create a transaction
+      // WAIT for the transaction to finish
+      val transactionStatusFuture: Future[String] = for {
+        user <- fetchUser(username)
+        transaction <- createTransaction(user, merchantName, price)
+      } yield transaction.status
+
+      // blocking call
+      Await.result(transactionStatusFuture, 2.seconds) // throws TimeoutException if the future doesn't complete in 2sec
+    }
+  }
+
+  /*
+    Promises
+   */
+
+  val promise = Promise[Int]() // "controller" over a future
+  val futureInside: Future[Int] = promise.future
+
   def main(args: Array[String]): Unit = {
     sendMessageToBestFriend_v3("rtjvm.id.2-jane", "Hello, best friend!")
+    println("purchasing...")
+    BankingApp.purchase("Daniel-234", "shoes", "rtjvm-store", 3000)
+    println("purhcase finished")
     Thread.sleep(2000)
     executor.shutdown()
   }
