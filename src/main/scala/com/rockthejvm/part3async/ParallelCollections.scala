@@ -42,6 +42,41 @@ object ParallelCollections {
     println(s"Parallel time: $parallelTime ms")
   }
 
-  def main(args: Array[String]): Unit = {}
+  def demoUndefinedOrder(): Unit = {
+    val aList = (1 to 1000).toList
+    val reduction = aList.reduce(_ - _)
+    // [1,2,3].reduce(_ - _) = 1 - 2 - 3 = -4
+    // [1,2,3].reduce(_ - _) = 1 - (2 - 3) = 2
+
+    val parallelReduction = aList.par.reduce(_ - _)
+    // order of operation is undefined, returns different results
+
+    println(s"sequential reduction: $reduction")
+    println(s"parallel reduction: $parallelReduction")
+  }
+
+  // for associative ops, result is deterministic
+  def demoDefinedOrder(): Unit = {
+    val strings =
+      "I love parallel collections but I must be careful".split(" ").toList
+    val concatenation = strings.reduce(_ + " " + _)
+    val parallelConcatenation = strings.par.reduce(_ + " " + _)
+
+    println(s"sequential concatenation: $concatenation")
+    println(s"parallel concatenation: $parallelConcatenation")
+  }
+
+  def demoRaceConditions(): Unit = {
+    var sum = 0
+    (1 to 1000).toList.foreach(elem => sum += elem)
+    println(sum)
+  }
+  // WARNING: careful with doing parallel operations with imperative programming
+
+  def main(args: Array[String]): Unit = {
+    //compareListTransformation()
+    //demoDefinedOrder()
+    demoRaceConditions()
+  }
 
 }
