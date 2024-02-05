@@ -76,12 +76,30 @@ object Givens {
       ord.compare(combineAll(x), combineAll(y))
     }
   }
-
   // pass a regular value instead of a given
   val myCombinator = new Combinator[Int] {
     override def combine(x: Int, y: Int): Int = x * y
   }
   val listProduct = combineAll(List(1,2,3))(using myCombinator)
+
+
+  /*
+   * Exercises:
+   * 1 - create a given for ordering Option[A] if you can order A
+   * 2 - create a summoning method that fetches the given value of your particular
+   */
+
+  given optionOrdering[A: Ordering]: Ordering[Option[A]] with {
+    override def compare(x: Option[A], y: Option[A]): Int = (x, y) match {
+      case (Some(a), Some(b)) => summon[Ordering[A]].compare(a, b)
+      case (Some(_), None) => 1
+      case (None, Some(_)) => -1
+      case (None, None) => 0
+    }
+  }
+
+  def fetchGivenValue[A](using theValue: A): A = theValue
+
 
 
   def main(args: Array[String]): Unit = {}
