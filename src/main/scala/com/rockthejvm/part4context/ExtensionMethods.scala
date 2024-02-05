@@ -85,6 +85,11 @@ object ExtensionMethods {
       case Branch(left, right) => left.forall(predicate) && right.forall(predicate)
     }
 
+    def combineAll(using combinator: Combinator[A]): A = tree match {
+      case Leaf(value) => value
+      case Branch(left, right) => combinator.combine(left.combineAll, right.combineAll)
+    }
+
   extension (tree: Tree[Int])
     def sum(using numeric: Numeric[Int]): Int = tree match {
       case Leaf(value) => value
@@ -93,7 +98,12 @@ object ExtensionMethods {
 
 
   def main(args: Array[String]): Unit = {
-    println(2003.isPrime)
+    //println(2003.isPrime)
+    val aTree: Tree[Int] = Branch(Branch(Leaf(3), Leaf(1)), Leaf(10))
+    println(aTree.map(_ + 1))
+    println(aTree.forall(_ % 2 == 0)) // false
+    println(aTree.sum)
+    println(aTree.combineAll)
   }
 
 }
