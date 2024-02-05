@@ -19,6 +19,7 @@ object ExtensionMethods {
   val firstLast = aList.ends
 
   // reason: make APIs very expressive
+  // reason 2: enhance CERTAIN types with new capabilities
   trait Combinator[A] {
     def combine(x: A, y: A): A
   }
@@ -30,7 +31,69 @@ object ExtensionMethods {
     override def combine(x: Int, y: Int): Int = x + y
 
   val firstSum = aList.combineAll
+  val someStrings = List("I", "love", "Scala")
+  //val stringsSum = someStrings.combineAll // does not compile - no given combinator[String] in scope
 
-  def main(args: Array[String]): Unit = {}
+  // group extensions
+  object MyStringExtensions {
+     extension[A](list: List[A])
+       def ends: (A, A) = (list.head, list.last)
+       def combineAll(using combinator: Combinator[A]): A =
+         list.reduce(combinator.combine)
+  }
+
+  // call extension methods directly
+  val firstLast_v2 = ends(aList) // same as aList.ends
+
+  /**
+   * Exercises
+   * 1. Add an isPrime method to the Int type.
+   *    You should be able to write 7.isPrime
+   * 2. Add extensions to Tree:
+   *    - map(f: A => B): Tree[B]
+   *    - forall(predicate: A => Boolean): Boolean
+   *    - sum=> sum all elements of the tree
+   *
+   */
+  // 1
+    extension(number: Int)
+        def isPrime: Boolean = {
+          def isPrimeAux(potentialDivisor: Int): Boolean =
+            if (potentialDivisor> number / 2) true
+            else if (number % potentialDivisor == 0) false
+            else isPrimeAux(potentialDivisor + 1)
+
+          assert(number >= 0)
+          if (number == 0 || number == 1) false
+          else isPrimeAux(2)
+        }
+
+
+  // "library code" = cannot change
+  sealed abstract class Tree[A]
+  case class Leaf[A](value: A) extends Tree[A]
+  case class Branch[A](left: Tree[A], right: Tree[A]) extends Tree[A]
+
+  extension [A](tree: Tree[A])
+    def map[B](f: A => B): Tree[B] = tree match {
+        case Leaf(value) => Leaf(f(value))
+        case Branch(left, right) => Branch(left.map(f), right.map(f))
+    }
+
+    def forall(predicate: A => Boolean): Boolean = tree match {
+      case Leaf(value) => predicate(value)
+      case Branch(left, right) => left.forall(predicate) && right.forall(predicate)
+    }
+
+  extension (tree: Tree[Int])
+    def sum(using numeric: Numeric[Int]): Int = tree match {
+      case Leaf(value) => value
+      case Branch(left, right) => left.sum + right.sum
+    }
+
+
+  def main(args: Array[String]): Unit = {
+    println(2003.isPrime)
+  }
 
 }
