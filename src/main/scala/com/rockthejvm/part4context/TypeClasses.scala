@@ -100,6 +100,12 @@ object TypeClasses {
    */
 
 
-  def main(args: Array[String]): Unit = {}
+  def main(args: Array[String]): Unit = {
+    println(bob2HTML)
+    println(bob2HTML_V2)
+    println(bob2Html_v3)
+    println(bob2Html_v4)
+    println(bob2Html_v5)
+  }
 
 }
