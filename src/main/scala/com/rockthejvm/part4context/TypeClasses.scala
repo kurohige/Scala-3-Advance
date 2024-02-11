@@ -81,6 +81,23 @@ object TypeClasses {
   val bob2Html_v3 = HTMLSerializer.serialize(bob)
   val bob2Html_v4 = HTMLSerializer[User].serialize(bob)
 
+  // part 4
+  object HTMLSyntax {
+    extension [T](value: T)
+      def toHTML(using serializer: HTMLSerializer[T]): String = serializer.serialize(value)
+  }
+
+  import HTMLSyntax.*
+
+  val bob2Html_v5 = bob.toHTML
+
+  /*
+    Cool!
+    - extend functionality to new types that we want to support
+    - flexibility to add TC instances in a different place than the definition of the TC
+    - choose implementations (by importing the right givens)
+    - super expressive! (via extension methods)
+   */
 
 
   def main(args: Array[String]): Unit = {}
