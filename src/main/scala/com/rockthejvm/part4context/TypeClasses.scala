@@ -47,7 +47,7 @@ object TypeClasses {
   }
 
   // part 2 - type class instances for the supported types
-  val userSerializer = new HTMLSerializer[User] {
+  given userSerializer: HTMLSerializer[User] with {
     override def serialize(value: User): String =
       s"<div>${value.name} (${value.age} yo) <a href=${value.email}/></div>"
   }
@@ -55,36 +55,32 @@ object TypeClasses {
   val bob2HTML_V2 = userSerializer.serialize(bob)
 
   /*
-    Benefits:
-    - can define serializers for other types OUTSIDE the "library"
-    - multiple implementations for a type, pick whichever you want
-   */
-
+     Benefits:
+     - can define serializers for other types OUTSIDE the "library"
+     - multiple serializers for the same type, pick whichever you want
+    */
   import java.util.Date
-  object DateSerializer extends HTMLSerializer[Date] {
-    override def serialize(value: Date): String =
-      s"<div>${value.toString}</div>"
-  }
-
-  val partialUserSerializer = new HTMLSerializer[User] {
-    override def serialize(value: User): String =
-      s"<div>${value.name}</div>"
+  given dateSerializer: HTMLSerializer[Date] with {
+    override def serialize(date: Date) = s"<div>${date.toString()}</div>"
   }
 
   object SomeOtherSerializerFunctionality { // organize givens properly
-    given SomeOtherSerializerFunctionality :HTMLSerializer[User] with {
-      override def serialize(value: User): String =
-        s"<div>${value.name}</div>"
+    given partialUserSerializer: HTMLSerializer[User] with {
+      override def serialize(user: User) = s"<div>${user.name}</div>"
     }
   }
 
   // part 3 - using the type class (user-facing API)
   object HTMLSerializer {
     def serialize[T](value: T)(using serializer: HTMLSerializer[T]): String =
-    serializer.serialize(value)
+      serializer.serialize(value)
+
+    def apply[T](using serializer: HTMLSerializer[T]): HTMLSerializer[T] = serializer
   }
 
-  val bob2HTML_V3 = HTMLSerializer.serialize(bob)
+  val bob2Html_v3 = HTMLSerializer.serialize(bob)
+  val bob2Html_v4 = HTMLSerializer[User].serialize(bob)
+
 
 
   def main(args: Array[String]): Unit = {}
