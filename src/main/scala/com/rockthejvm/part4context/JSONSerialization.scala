@@ -76,17 +76,17 @@ object JSONSerialization {
   given userConverter: JSONConverter[User] with
     override def convert(user: User): JSONValue = JSONObject(
       Map(
-        "name" -> JSONString(user.name),
-        "age" -> JSONNumber(user.age),
-        "email" -> JSONString(user.email)
+        "name" -> stringCoverter.convert(user.name),
+        "age" -> intConverter.convert(user.age),
+        "email" -> stringCoverter.convert(user.email)
       )
     )
 
   given postConverter: JSONConverter[Post] with
     override def convert(post: Post): JSONValue = JSONObject(
       Map(
-        "content" -> JSONString(post.content),
-        "createdAt" -> dateConverter.convert(post.createdAt)
+        "content" -> stringCoverter.convert(post.content),
+        "createdAt" -> stringCoverter.convert(post.createdAt.toString)
       )
     )
 
@@ -99,6 +99,26 @@ object JSONSerialization {
     )
   }
 
-  def main(args: Array[String]): Unit = {}
+  // 3 - user-facing API
+  object JSONConverter{
+    def convertToJson[T](value: T)(using converter: JSONConverter[T]): JSONValue = converter.convert(value)
+
+    def apply[T](instance:JSONConverter[T]): JSONConverter[T] = instance
+  }
+
+  // example
+  val now = new Date(System.currentTimeMillis())
+  val john = User("John", 34, "john@rockthejvm.com")
+  val feed = Feed(john, List(
+    Post("Hello, Scala!", now),
+    Post("Look at this cute puppy!", now)
+  ))
+
+  // 4 - extension methods
+
+  def main(args: Array[String]): Unit = {
+    println(JSONConverter.convertToJson(john).stringify)
+    println(JSONConverter.convertToJson(feed).stringify)
+  }
 
 }
