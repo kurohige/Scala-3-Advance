@@ -116,9 +116,18 @@ object JSONSerialization {
 
   // 4 - extension methods
 
+  object JSONSyntax {
+    extension [T](value: T) {
+      def toIntermediate( using converter: JSONConverter[T]): JSONValue = converter.convert(value)
+
+      def toJSON(using converter: JSONConverter[T]): String = toIntermediate.stringify
+    }
+  }
+
   def main(args: Array[String]): Unit = {
-    println(JSONConverter.convertToJson(john).stringify)
-    println(JSONConverter.convertToJson(feed).stringify)
+    import JSONSyntax.*
+    println(john.toJSON)
+    println(feed.toJSON)
   }
 
 }
