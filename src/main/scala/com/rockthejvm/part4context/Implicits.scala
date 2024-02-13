@@ -13,7 +13,7 @@ object Implicits {
   given intSemigroup: Semigroup[Int] with
     override def combine(x: Int, y: Int) = x + y
 
-  val sumOf10 = combineAll((1 to 10).toList)
+  //val sumOf10 = combineAll((1 to 10).toList)
 
   // implicit conversions
   def combineAllImplicit[A](list: List[A])(implicit semigroup: Semigroup[A]): A =
@@ -23,7 +23,7 @@ object Implicits {
     override def combine(x: Int, y: Int) = x + y
   }
 
-  val sumOf10Implicit = combineAllImplicit((1 to 10).toList)
+  //val sumOf10Implicit = combineAllImplicit((1 to 10).toList)
   
   // extension methods
   extension (number: Int)
