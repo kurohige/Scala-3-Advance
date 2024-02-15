@@ -72,8 +72,14 @@ object AdvanceInheritance {
     }
   }
 
+  def demoColorInheritance(): Unit = {
+    val color = new White
+    color.print
+  }
+
   def main(args: Array[String]): Unit = {
     demoLiger()
+    demoColorInheritance()
   }
 
 }
