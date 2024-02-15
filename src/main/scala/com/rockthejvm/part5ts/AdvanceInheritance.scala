@@ -61,6 +61,17 @@ object AdvanceInheritance {
     }
   }
 
+  class Red {
+    def print: Unit = println("red")
+  }
+
+  class White extends Red with Green with Blue {
+    override def print: Unit = {
+      println("white")
+      super.print
+    }
+  }
+
   def main(args: Array[String]): Unit = {
     demoLiger()
   }
