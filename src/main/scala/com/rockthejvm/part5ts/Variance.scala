@@ -57,18 +57,27 @@ object Variance {
   class RandomGenerator[+A] // covariant
   class MyFunction1[-A, +B] // contravariant in A, covariant in B
   class MyOption[+A] // covariant
-  class JSONSerializer[-A] // contravariant
+  class JSONSerializer[
+      -A
+  ] // contravariant because it consumes values and turns them into strings
 
   // 2 - add variance modifiers to this "Library"
-  abstract class LList[A] {
+  abstract class LList[+A] {
     def head: A
     def tail: LList[A]
   }
 
-  case class EmptyList[A]() extends LList[A] {
-    override def head: A = throw new NoSuchElementException
-    override def tail: LList[A] = throw new NoSuchElementException
+  case object EmptyList extends LList[Nothing] {
+    override def head = throw new NoSuchElementException
+    override def tail = throw new NoSuchElementException
   }
+
+  case class Cons[+A](override val head: A, override val tail: LList[A])
+      extends LList[A]
+
+  val aList: LList[Int] = EmptyList // fine
+  val anotherList: LList[String] = EmptyList // also fine
+  // Nothing <: A, then LList[Nothing] <: LList[A] - LList is covariant
 
   def main(args: Array[String]): Unit = {}
 
