@@ -66,6 +66,24 @@ object VariancePositions {
     val rescueDog: Dog = lassiesVet.rescueAnimal() // must be a dog - type conflict!
    */
 
+  /** 3 - Solving variance position problems
+    */
+  abstract class LList[+A] {
+    def head: A
+    def tail: LList[A]
+    def add[B >: A](element: B): LList[B] // widen the type
+  }
+
+  // val animals: List[Cat] = list of cats
+  // val newAnimals: List[Animal] = animals.add(new Dog) // this is allowed
+
+  class Vehicle
+  class Car extends Vehicle
+  class Supercar extends Car
+  class RepairShop[-A <: Vehicle] {
+    def repair[B <: A](vehicle: B): B = vehicle
+  }
+
   def main(args: Array[String]): Unit = {}
 
 }
