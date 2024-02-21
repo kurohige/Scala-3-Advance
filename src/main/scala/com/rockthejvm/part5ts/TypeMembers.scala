@@ -21,8 +21,22 @@ object TypeMembers {
   val anAnimal: ac.AnimalType = ???
 
   //val cat: ac.BoundedAnimal = new Cat // code does not compile because BoundedAnimal might be Dog
-  val cat: ac.AnimalAlias = new Cat // compiles
+  val aCat: ac.AnimalAlias = new Cat // compiles
   val aDog: ac.SuperBoundedAnimal = new Dog // compiles
+
+  // establish relationships between types
+  // alternative to generics
+  class LList[T] {
+    def add(element: T): LList[T] = ???
+  }
+
+  class MyList {
+    type T
+    def add(element: T): MyList = ???
+  }
+
+  // .type
+  type CatType = aCat.type
 
   def main(args: Array[String]): Unit = {}
 
