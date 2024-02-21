@@ -59,6 +59,10 @@ object PathDependentTypes {
   val aString: String = getDefaultIdentifier(new StringRecord) // a string
   val anInt: Int = getDefaultIdentifier(new IntRecord) // an int
 
+  // functions with dependent types
+  val getIdentifiersFunc: Record => Record#Key =
+    getDefaultIdentifier // eta - expansion
+
   def main(args: Array[String]): Unit = {}
 
 }
