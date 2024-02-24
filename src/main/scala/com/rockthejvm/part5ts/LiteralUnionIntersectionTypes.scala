@@ -77,7 +77,23 @@ object LiteralUnionIntersectionTypes {
     device.use() // diamond problem
   }
 
-  class SmartPhone extends Camera with Phone // diamond problem
+  class SmartPhone extends Phone with Camera // diamond problem
+
+  // intersection types + covariance
+  trait HostConfig
+  trait HostController {
+    def get: Option[HostConfig]
+  }
+
+  trait PortConfig
+  trait PortController {
+    def get: Option[PortConfig]
+  }
+
+  def getConfigs(
+      controller: HostController & PortController
+  ): Option[HostConfig & PortConfig] =
+    controller.get
 
   def main(args: Array[String]): Unit = {
     useSmartDevice(new SmartPhone)
