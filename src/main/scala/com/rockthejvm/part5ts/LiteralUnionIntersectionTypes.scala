@@ -38,6 +38,49 @@ object LiteralUnionIntersectionTypes {
   val stringOrInt = if (43 > 0) "a string" else 45
   val stringOrInt_v2: String | Int = if (43 > 0) "a string" else 45
 
-  def main(args: Array[String]): Unit = {}
+  // union types + nulls
+  type Maybe[T] = T | Null // not Null
+
+  def handleMaybe(someValue: Maybe[String]) = {
+    if (someValue != null) someValue.length // flow typing
+    else 0
+  }
+
+  type ErrorOr[T] = T | "error"
+//  def handleResource(arg: ErrorOr[Int]): Unit =
+//    if(arg != "error") println(arg + 1) // flow typing doesn't work
+//    else println(s"Resource: $arg")
+
+  // 3 - Intersection Types
+  class Animal
+  trait Carnivore
+  class Crocodile extends Animal with Carnivore
+
+  val carnivoreAnimal: Animal & Carnivore = new Crocodile
+
+  trait Gadget {
+    def use(): Unit
+  }
+  trait Camera extends Gadget {
+    def takePicture() = println("Smile!")
+    override def use(): Unit = println("Snap")
+  }
+
+  trait Phone extends Gadget {
+    def makePhoneCall() = println("Calling...")
+    override def use(): Unit = println("Ring ring")
+  }
+
+  def useSmartDevice(device: Camera & Phone) = {
+    device.takePicture()
+    device.makePhoneCall()
+    device.use() // diamond problem
+  }
+
+  class SmartPhone extends Camera with Phone // diamond problem
+
+  def main(args: Array[String]): Unit = {
+    useSmartDevice(new SmartPhone)
+  }
 
 }
