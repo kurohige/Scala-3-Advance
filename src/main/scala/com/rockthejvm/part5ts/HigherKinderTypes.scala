@@ -27,28 +27,28 @@ object HigherKinderTypes {
   def do10xList(list: List[Int]): List[Int] = list.map(_ * 10)
   def do10xOption(option: Option[Int]): Option[Int] = option.map(_ * 10)
   def do10xTry(theTry: Try[Int]): Try[Int] = theTry.map(_ * 10)
-  
+
   // DRY principle: Don't Repeat Yourself
   // step 1: TC definition
   trait Functor[F[_]] {
     def map[A, B](initialValue: F[A])(f: A => B): F[B]
     // map[A, B](lista: List[A])(f: A => B): List[B]
   }
-  
+
   // step 2: TC instances
   given ListFunctor: Functor[List] with {
     override def map[A, B](initialValue: List[A])(f: A => B): List[B] = initialValue.map(f)
   }
-  
+
   // step 3: "user-facing" API
   def do10x[F[_]](container: F[Int])(using functor: Functor[F]): F[Int] = functor.map(container)(_ * 10)
-  
+
   // if you create TC instances for Option and Try, you can use do10x with those types as well
-  
+
   // step 4: extension methods
   extension [F[_], A](container: F[A])(using functor: Functor[F])
     def map[B](f: A => B): F[B] = functor.map(container)(f)
-    
+
   def do10x_v2[F[_]: Functor](container: F[Int]): F[Int] = container.map(_ * 10)
 
   /**
@@ -56,26 +56,57 @@ object HigherKinderTypes {
    * in the general API, must use for-comprehensions
    * @param args
    */
-  
+
   def combineList[A, B](list1: List[A], list2: List[B]): List[(A,B)] =
     for{
         a <- list1
         b <- list2
     } yield (a, b)
-    
+
   def combineOption[A, B](option1: Option[A], option2: Option[B]): Option[(A, B)] =
     for{
         a <- option1
         b <- option2
     } yield (a, b)
-    
+
   def combineTry[A, B](try1: Try[A], try2: Try[B]): Try[(A, B)] =
     for {
         a <- try1
         b <- try2
     } yield (a, b)
-  
-  
+
+  /*
+    def combine[F[_]: SomeTC, A, B](fa: F[A], fb: F[B]): F[(A, B)] =
+      for {
+        a <- fa
+        b <- fb
+      } yield (a, b)
+   */
+
+  // step 1: define the TC
+  trait Magic[F[_]] extends Functor[F] {
+    def flatMap[A, B](fa: F[A])(f: A => F[B]): F[B]
+  }
+
+  // step 2: TC instances
+  given magicList: Magic[List] with {
+    override def map[A, B](list: List[A])(f: A => B): List[B] = list.map(f)
+    override def flatMap[A, B](list: List[A])(f: A => List[B]): List[B] = list.flatMap(f)
+  }
+
+  // step 3: user-facing API
+  def combine[F[_], A, B](fa: F[A], fb: F[B])(using magic: Magic[F]): F[(A, B)] =
+    magic.flatMap(fa)(a => magic.map(fb)(b => (a, b)))
+
+  extension [F[_], A](container: F[A])(using magic: Magic[F])
+    def flatMap[B](f: A => F[B]): F[B] = magic.flatMap(container)(f)
+
+  def combine_v2[F[_] : Magic, A, B](fa: F[A], fb: F[B]): F[(A, B)] =
+    for {
+      a <- fa
+      b <- fb
+    } yield (a, b)
+
   def main(args: Array[String]): Unit = {
     println(do10x(List(1, 2, 3))) // List(10, 20, 30)
   }
