@@ -47,6 +47,8 @@ object StructuralTypes {
   }
 
   val cCloseable = new CustomCloseable
+  
+  def closeResource_v2(closeable: { def close(): Unit }): Unit = closeable.close()
 
   def main(args: Array[String]): Unit = {
     dog.makeSound() // through reflection (slow)
