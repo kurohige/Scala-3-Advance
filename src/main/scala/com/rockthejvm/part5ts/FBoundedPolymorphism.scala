@@ -50,6 +50,9 @@ object FBoundedPolymorphism {
         }
         // type safety
     }
+    
+    // example: some ORM Libraries
+    trait Entity[E <: Entity[E]] // recursive type F-Bounded Polymorphism
 
   def main(args: Array[String]): Unit = {}
 }
