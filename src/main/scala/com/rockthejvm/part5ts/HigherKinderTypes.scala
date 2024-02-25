@@ -50,6 +50,30 @@ object HigherKinderTypes {
     def map[B](f: A => B): F[B] = functor.map(container)(f)
     
   def do10x_v2[F[_]: Functor](container: F[Int]): F[Int] = container.map(_ * 10)
+
+  /**
+   * Exercise: implement a new type class on the same structure as Functor.
+   * in the general API, must use for-comprehensions
+   * @param args
+   */
+  
+  def combineList[A, B](list1: List[A], list2: List[B]): List[(A,B)] =
+    for{
+        a <- list1
+        b <- list2
+    } yield (a, b)
+    
+  def combineOption[A, B](option1: Option[A], option2: Option[B]): Option[(A, B)] =
+    for{
+        a <- option1
+        b <- option2
+    } yield (a, b)
+    
+  def combineTry[A, B](try1: Try[A], try2: Try[B]): Try[(A, B)] =
+    for {
+        a <- try1
+        b <- try2
+    } yield (a, b)
   
   
   def main(args: Array[String]): Unit = {
