@@ -74,6 +74,35 @@ object FBoundedPolymorphism {
         List(new Dog, new Dog, new Dog) // List[Dog]
     }
     // type safety
+
+//    class Crocodile extends Animal[Dog] { // will not compile as it must extend itself
+//      override def breed: List[Dog] = List(new Dog, new Dog)
+//    }
+
+    // can go one level deeper
+    trait Fish extends Animal[Fish]
+    class Cod extends Fish {
+      override def breed: List[Fish] = List(new Cod, new Cod)
+    }
+
+    class Shark extends Fish {
+      override def breed: List[Animal[Fish]] = List(new Cod)
+    }
+
+    // solution level 2
+    trait FishL2[A <: FishL2[A]] { // recursive type F-Bounded Polymorphism
+      self: A =>
+      def breed: List[A]
+    }
+
+    class Tuna extends FishL2[Tuna] {
+      override def breed: List[Tuna] = List(new Tuna, new Tuna)
+    }
+
+//    class Salmon extends FishL2[Tuna] { // not ok as it must extend itself
+//      override def breed: List[Tuna] = List(new Tuna, new Tuna)
+//    }
+
   }
 
   def main(args: Array[String]): Unit = {}
