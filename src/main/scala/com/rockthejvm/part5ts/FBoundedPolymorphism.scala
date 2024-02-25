@@ -34,25 +34,47 @@ object FBoundedPolymorphism {
     // I have to write the proper type signatures
     // problem: want the compiler to help
   }
-  
-    object FBP {
-        trait Animal[A <: Animal[A]] { // recursive type F-Bounded Polymorphism
-        def breed: List[A]
-        }
-    
-        class Cat extends Animal[Cat] {
-        override def breed: List[Cat] = List(new Cat, new Cat)
-        }
-    
-        class Dog extends Animal[Dog] {
-        override def breed: List[Dog] =
-            List(new Dog, new Dog, new Dog) // List[Dog]
-        }
-        // type safety
+
+  object FBP {
+    trait Animal[A <: Animal[A]] { // recursive type F-Bounded Polymorphism
+      def breed: List[A]
     }
-    
-    // example: some ORM Libraries
-    trait Entity[E <: Entity[E]] // recursive type F-Bounded Polymorphism
+
+    class Cat extends Animal[Cat] {
+      override def breed: List[Cat] = List(new Cat, new Cat)
+    }
+
+    class Dog extends Animal[Dog] {
+      override def breed: List[Dog] =
+        List(new Dog, new Dog, new Dog) // List[Dog]
+    }
+    // type safety
+  }
+
+  // example: some ORM Libraries
+  trait Entity[E <: Entity[E]] // recursive type F-Bounded Polymorphism
+  // example: java sorting library
+  class Person extends Comparable[Person] { // F-Bounded Polymorphism
+    override def compareTo(o: Person): Int = 0
+  }
+
+  // FBP + self types
+  object FBPSelfTypes {
+    trait Animal[A <: Animal[A]] { // recursive type F-Bounded Polymorphism
+      self: A =>
+      def breed: List[A]
+    }
+
+    class Cat extends Animal[Cat] {
+      override def breed: List[Cat] = List(new Cat, new Cat)
+    }
+
+    class Dog extends Animal[Dog] {
+      override def breed: List[Dog] =
+        List(new Dog, new Dog, new Dog) // List[Dog]
+    }
+    // type safety
+  }
 
   def main(args: Array[String]): Unit = {}
 }
