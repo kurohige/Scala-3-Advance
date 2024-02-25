@@ -73,6 +73,46 @@ object SelfTypes {
     // API
   }
 
+  // example: a photo taking app API in the style of instragram
+  // layer 1 - small components
+  trait Picture extends ComponentLayer1 {
+    def takePicture(): String
+  }
+  trait Stats extends ComponentLayer1 {
+    def showStats(picture: String): String
+  }
+
+  // layer 2 - compose the app
+  trait ProfilePage extends ComponentLayer2 with Picture {
+    def showProfile(user: String): String
+  }
+  trait Analytics extends ComponentLayer2 with Stats {
+    def showMostPopular(): String
+  }
+
+  // layer 3 - the app
+  trait AnalyticsApp extends Application with Analytics
+  // dependencies are explicit in layers, like baking a cake
+  // when you put the pieces together, you can pick a possible implementation from each layer
+
+  // self-types: prserve the "this" instance
+  class SingerWithInnerClass {
+    self => // self-type with no type requirement, self == this
+    class Voice {
+      def sing() =
+        this.toString // this == the Voice instance, use "self" to refer to the outer instance
+    }
+  }
+
+  // cyclical dependencies
+  // class X extends Y
+  // class Y extends X this will not compile
+
+  // cyclical dependencies with self-types
+  trait X { self: Y => }
+  trait Y { self: X => }
+  trait Z extends X with Y // this will compile
+
   def main(args: Array[String]): Unit = {}
 
 }
