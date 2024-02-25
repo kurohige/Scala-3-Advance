@@ -85,9 +85,9 @@ object FBoundedPolymorphism {
       override def breed: List[Fish] = List(new Cod, new Cod)
     }
 
-    class Shark extends Fish {
-      override def breed: List[Animal[Fish]] = List(new Cod)
-    }
+//    class Shark extends Fish {
+//      override def breed: List[Animal[Fish]] = List(new Cod)
+//    }
 
     // solution level 2
     trait FishL2[A <: FishL2[A]] { // recursive type F-Bounded Polymorphism
